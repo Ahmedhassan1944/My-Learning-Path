@@ -1,0 +1,12 @@
+let
+    Source = Excel.Workbook(File.Contents("D:\Lerning\HSR Nilesat Bridge (098) Concrete Log- (12-10-2025) - updated.xlsx"), null, true),
+    Table1_Table = Source{[Item="Table1",Kind="Table"]}[Data],
+    #"Changed Type" = Table.TransformColumnTypes(Table1_Table,{{"Day", Int64.Type}, {"Date", type date}, {"Axis", type text}, {"Element no.", type text}, {"Element ", type text}, {"Element type", type text}, {"Concrete Type", type text}, {"Pile Excavation Co.", type text}, {"Concrete Station", type text}, {"Bill no.", Int64.Type}, {"Concrete Strength", type text}, {"Cement Content", type text}, {"Admixture", type text}, {"Quantity (m3)", type number}, {"Total Qty (m3)", type number}, {"Theoretical (Cut off)", type number}, {"Theoretical (NGL)", type number}, {"Theoretical (Top of casion)", type number}, {"Losses", type number}, {"Pump Type", type text}, {"Cement Qty", type number}, {"Cement Type", type text}, {"Temperature difference (celsius)", Int64.Type}, {"Notes", type text}, {"S/C Invoice no.", Int64.Type}, {"Client Invoice no.", type text}, {"Addation Notes", type any}}),
+    #"Removed Columns" = Table.RemoveColumns(#"Changed Type",{"Temperature difference (celsius)", "Day"}),
+    #"Filled Down" = Table.FillDown(#"Removed Columns",{"Date", "Axis", "Element no.", "Element ", "Pile Excavation Co.", "Concrete Station", "Pump Type", "Cement Type", "S/C Invoice no."}),
+    #"Replaced Errors" = Table.ReplaceErrorValues(#"Filled Down", {{"S/C Invoice no.", 0}}),
+    #"Inserted Day Name" = Table.AddColumn(#"Replaced Errors", "Day Name", each Date.DayOfWeekName([Date]), type text),
+    #"Reordered Columns" = Table.ReorderColumns(#"Inserted Day Name",{"Day Name", "Date", "Axis", "Element no.", "Element ", "Element type", "Concrete Type", "Pile Excavation Co.", "Concrete Station", "Bill no.", "Concrete Strength", "Cement Content", "Admixture", "Quantity (m3)", "Total Qty (m3)", "Theoretical (Cut off)", "Theoretical (NGL)", "Theoretical (Top of casion)", "Losses", "Pump Type", "Cement Qty", "Cement Type", "Notes", "S/C Invoice no.", "Client Invoice no.", "Addation Notes"}),
+    #"Replaced Value" = Table.ReplaceValue(#"Reordered Columns",null,0,Replacer.ReplaceValue,{"Total Qty (m3)", "Theoretical (Cut off)", "Theoretical (NGL)", "Theoretical (Top of casion)", "Losses", "Cement Qty"})
+in
+    #"Replaced Value"

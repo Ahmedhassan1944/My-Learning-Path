@@ -1,0 +1,6 @@
+let
+    Source = Table.Combine({Admin4, BP, Codes1, Electric, General3, HSE5, IT2, Mechanics, Plump, Survying6}),
+    #"Removed Columns" = Table.RemoveColumns(Source,{"No."}),
+    #"Appended Query" = Table.Combine({#"Removed Columns", Scaffolding})
+in
+    #"Appended Query"

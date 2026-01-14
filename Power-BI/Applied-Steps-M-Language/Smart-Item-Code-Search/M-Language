@@ -1,0 +1,12 @@
+let
+    Source = OData.Feed("https://edecs.operations.eu.dynamics.com/data", null, [Implementation="2.0"]),
+    CDSPurchaseRequisitionLines_table = Source{[Name="CDSPurchaseRequisitionLines",Signature="table"]}[Data],
+    #"Removed Other Columns" = Table.SelectColumns(CDSPurchaseRequisitionLines_table,{"RequisitionNumber", "BusinessJustificationDetails", "ProductStyleId", "LineStatus", "RequisitionerPersonnelNumber", "ReceivingSiteId", "LineDescription", "ItemNumber", "ReceivingOperatingUnitPartyNumber", "ProductSizeId", "ProductName", "LineType", "ProductConfigurationId", "RequestedDate", "ProductVersionId", "ProjectId", "ProductColorId", "ProjectCategoryId", "BusinessJustificationCode", "ProcurementProductCategoryName", "ReceivingWarehouseId"}),
+    #"Merged Queries" = Table.NestedJoin(#"Removed Other Columns", {"RequisitionNumber"}, #"#02-PurchaseRequisitionHeaders", {"RequisitionNumber"}, "#02-PurchaseRequisitionHeaders", JoinKind.Inner),
+    #"Expand-Header-Name" = Table.ExpandTableColumn(#"Merged Queries", "#02-PurchaseRequisitionHeaders", {"RequisitionName"}, {"RequisitionName"}),
+    #"Renamed Columns" = Table.RenameColumns(#"Expand-Header-Name",{{"ProductStyleId", "#Dim-04"}, {"ProductSizeId", "#Dim-02"},{"RequisitionName" , "#Headers"}, {"ProductConfigurationId", "#Dim-01"}, {"ProductColorId", "#Dim-03"}, {"ProductVersionId", "#Dim-05"}}),
+    #"Reordered Columns" = Table.ReorderColumns(#"Renamed Columns",{"RequisitionNumber", "#Headers", "BusinessJustificationDetails", "ProductName", "LineDescription", "ItemNumber", "#Dim-01", "#Dim-02", "#Dim-03", "#Dim-04", "#Dim-05", "ProcurementProductCategoryName", "ReceivingSiteId", "ReceivingWarehouseId", "LineStatus", "RequisitionerPersonnelNumber", "LineType", "RequestedDate", "ProjectCategoryId", "ProjectId", "BusinessJustificationCode", "ReceivingOperatingUnitPartyNumber"}),
+    #"Changed Type" = Table.TransformColumnTypes(#"Reordered Columns",{{"RequestedDate", type date}}),
+    #"Lowercased Text" = Table.TransformColumns(#"Changed Type",{{"#Headers", Text.Lower, type text}, {"BusinessJustificationDetails", Text.Lower, type text}, {"ProductName", Text.Lower, type text}, {"LineDescription", Text.Lower, type text}, {"#Dim-01", Text.Lower, type text}, {"#Dim-02", Text.Lower, type text}, {"#Dim-04", Text.Lower, type text}, {"#Dim-03", Text.Lower, type text}, {"#Dim-05", Text.Lower, type text}})
+in
+    #"Lowercased Text"
