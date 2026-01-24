@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة تصور تنفيذ الكود - خطوة بخطوة</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .panel-title {
+            font-size: 1.4em;
+            color: #2a5298;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #667eea;
+            font-weight: bold;
+        }
+
+        /* Code Panel */
+        .code-panel {
+            grid-row: span 2;
+        }
+
+        .code-container {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 15px;
+            overflow-x: auto;
+        }
+
+        .code-line {
+            display: flex;
+            align-items: center;
+            padding: 8px 10px;
+            margin: 2px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 1.1em;
+        }
+
+        .line-number {
+            color: #858585;
+            min-width: 35px;
+            margin-left: 10px;
+            user-select: none;
+        }
+
+        .line-code {
+            color: #d4d4d4;
+            direction: ltr;
+            text-align: left;
+        }
+
+        .code-line.active {
+            background: #264f78;
+            box-shadow: 0 0 15px rgba(102, 126, 234, 0.5);
+            transform: scale(1.02);
+        }
+
+        .code-line.executed {
+            background: #1e4620;
+        }
+
+        .keyword { color: #569cd6; }
+        .function { color: #dcdcaa; }
+        .string { color: #ce9178; }
+        .number { color: #b5cea8; }
+        .variable { color: #9cdcfe; }
+
+        /* Variables Panel */
+        .variables-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .variables-table th,
+        .variables-table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .variables-table th {
+            background: #667eea;
+            color: white;
+            font-weight: bold;
+        }
+
+        .variables-table tr:hover {
+            background: #f5f5f5;
+        }
+
+        .var-value {
+            color: #2a5298;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .var-value.updated {
+            animation: valueUpdate 0.5s ease;
+        }
+
+        @keyframes valueUpdate {
+            0%, 100% { background: transparent; }
+            50% { background: #fff59d; }
+        }
+
+        /* Output Panel */
+        .output-container {
+            background: #1e1e1e;
+            border-radius: 10px;
+            padding: 15px;
+            min-height: 150px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .output-line {
+            color: #4ec9b0;
+            padding: 5px 0;
+            font-size: 1.1em;
+            direction: ltr;
+            text-align: left;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-10px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        /* Visualization Panel */
+        .visualization-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            padding: 20px;
+            min-height: 200px;
+            align-items: center;
+        }
+
+        .viz-box {
+            width: 60px;
+            height: 60px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #666;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+        }
+
+        .viz-box.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.2);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.5);
+            border-color: #ffd54f;
+        }
+
+        .viz-box.done {
+            background: #4caf50;
+            color: white;
+        }
+
+        /* Nested Loop Visualization */
+        .nested-grid {
+            display: grid;
+            gap: 8px;
+            padding: 20px;
+        }
+
+        .grid-cell {
+            width: 50px;
+            height: 50px;
+            background: #e0e0e0;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9em;
+            color: #666;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+
+        .grid-cell.active {
+            background: #667eea;
+            color: white;
+            transform: scale(1.15);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.5);
+            border-color: #ffd54f;
+        }
+
+        .grid-cell.done {
+            background: #4caf50;
+            color: white;
+        }
+
+        /* Control Panel */
+        .controls {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 25px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .control-btn {
+            background: white;
+            color: #667eea;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .control-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .status-bar {
+            background: white;
+            color: #2a5298;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .example-selector {
+            grid-column: span 2;
+            background: white;
+            padding: 20px;
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .example-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 1.1em;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .example-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .example-btn.active {
+            box-shadow: 0 0 20px rgba(102, 126, 234, 0.8);
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            .code-panel {
+                grid-row: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 منصة تصور تنفيذ الكود</h1>
+        <p>شوف الكود بيتنفذ قدامك خطوة بخطوة!</p>
+    </div>
+
+    <div class="example-selector panel">
+        <strong style="font-size: 1.2em;">اختر المثال:</strong>
+        <button class="example-btn active" onclick="loadExample('simple')">For Loop بسيط</button>
+        <button class="example-btn" onclick="loadExample('nested')">Nested For Loop</button>
+    </div>
+
+    <div class="container">
+        <!-- Code Panel -->
+        <div class="panel code-panel">
+            <div class="panel-title">💻 الكود</div>
+            <div class="code-container" id="codeContainer"></div>
+        </div>
+
+        <!-- Variables Panel -->
+        <div class="panel">
+            <div class="panel-title">📊 المتغيرات</div>
+            <table class="variables-table">
+                <thead>
+                    <tr>
+                        <th>القيمة</th>
+                        <th>المتغير</th>
+                    </tr>
+                </thead>
+                <tbody id="variablesTable">
+                    <tr>
+                        <td colspan="2" style="text-align: center; color: #999;">لم يبدأ التنفيذ بعد</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Visualization Panel -->
+        <div class="panel">
+            <div class="panel-title">🎨 التصور البصري</div>
+            <div class="visualization-container" id="visualization"></div>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="panel">
+            <div class="panel-title">📤 النتائج</div>
+            <div class="output-container" id="output">
+                <div style="color: #858585; font-style: italic;">جاهز للتنفيذ...</div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls panel">
+            <button class="control-btn" id="nextBtn" onclick="nextStep()">
+                ⏭️ الخطوة التالية
+            </button>
+            <button class="control-btn" id="autoBtn" onclick="autoRun()">
+                ▶️ تشغيل تلقائي
+            </button>
+            <button class="control-btn" onclick="reset()">
+                🔄 إعادة تعيين
+            </button>
+            <div class="status-bar">
+                <span>📍 الخطوة:</span>
+                <span id="stepCounter">0</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentExample = 'simple';
+        let currentStep = 0;
+        let executionSteps = [];
+        let isAutoRunning = false;
+        let autoInterval = null;
+
+        const examples = {
+            simple: {
+                code: [
+                    'for i in range(1, 6):',
+                    '    print(i)'
+                ],
+                steps: [
+                    { line: 0, vars: {i: 1}, output: null, viz: [1] },
+                    { line: 1, vars: {i: 1}, output: '1', viz: [1] },
+                    { line: 0, vars: {i: 2}, output: null, viz: [1, 2] },
+                    { line: 1, vars: {i: 2}, output: '2', viz: [1, 2] },
+                    { line: 0, vars: {i: 3}, output: null, viz: [1, 2, 3] },
+                    { line: 1, vars: {i: 3}, output: '3', viz: [1, 2, 3] },
+                    { line: 0, vars: {i: 4}, output: null, viz: [1, 2, 3, 4] },
+                    { line: 1, vars: {i: 4}, output: '4', viz: [1, 2, 3, 4] },
+                    { line: 0, vars: {i: 5}, output: null, viz: [1, 2, 3, 4, 5] },
+                    { line: 1, vars: {i: 5}, output: '5', viz: [1, 2, 3, 4, 5] }
+                ]
+            },
+            nested: {
+                code: [
+                    'for day in range(1, 4):',
+                    '    for lesson in range(1, 4):',
+                    '        print(f"يوم {day} - حصة {lesson}")'
+                ],
+                steps: generateNestedSteps()
+            }
+        };
+
+        function generateNestedSteps() {
+            const steps = [];
+            for (let day = 1; day <= 3; day++) {
+                steps.push({ line: 0, vars: {day}, output: null, viz: {day, lesson: 0} });
+                for (let lesson = 1; lesson <= 3; lesson++) {
+                    steps.push({ line: 1, vars: {day, lesson}, output: null, viz: {day, lesson} });
+                    steps.push({ 
+                        line: 2, 
+                        vars: {day, lesson}, 
+                        output: `يوم ${day} - حصة ${lesson}`, 
+                        viz: {day, lesson} 
+                    });
+                }
+            }
+            return steps;
+        }
+
+        function loadExample(type) {
+            currentExample = type;
+            reset();
+            
+            document.querySelectorAll('.example-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+
+        function reset() {
+            currentStep = 0;
+            isAutoRunning = false;
+            if (autoInterval) clearInterval(autoInterval);
+            
+            executionSteps = examples[currentExample].steps;
+            
+            renderCode();
+            updateVariables({});
+            clearOutput();
+            updateVisualization(null);
+            updateStepCounter();
+            
+            document.getElementById('nextBtn').disabled = false;
+            document.getElementById('autoBtn').textContent = '▶️ تشغيل تلقائي';
+        }
+
+        function renderCode() {
+            const code = examples[currentExample].code;
+            const codeContainer = document.getElementById('codeContainer');
+            codeContainer.innerHTML = code.map((line, index) => {
+                const formatted = formatCode(line);
+                return `
+                    <div class="code-line" id="line-${index}">
+                        <span class="line-number">${index + 1}</span>
+                        <span class="line-code">${formatted}</span>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function formatCode(line) {
+            return line
+                .replace(/\b(for|in|range|print|f)\b/g, '<span class="keyword">$1</span>')
+                .replace(/\b(\d+)\b/g, '<span class="number">$1</span>')
+                .replace(/"([^"]*)"/g, '"<span class="string">$1</span>"');
+        }
+
+        function nextStep() {
+            if (currentStep >= executionSteps.length) {
+                alert('✅ انتهى تنفيذ الكود!');
+                return;
+            }
+
+            const step = executionSteps[currentStep];
+            
+            highlightLine(step.line);
+            updateVariables(step.vars);
+            if (step.output) addOutput(step.output);
+            updateVisualization(step.viz);
+            
+            currentStep++;
+            updateStepCounter();
+            
+            if (currentStep >= executionSteps.length) {
+                document.getElementById('nextBtn').disabled = true;
+                if (isAutoRunning) {
+                    stopAutoRun();
+                }
+            }
+        }
+
+        function highlightLine(lineIndex) {
+            document.querySelectorAll('.code-line').forEach((line, index) => {
+                line.classList.remove('active');
+                if (index < lineIndex) {
+                    line.classList.add('executed');
+                }
+            });
+            
+            const activeLine = document.getElementById(`line-${lineIndex}`);
+            if (activeLine) {
+                activeLine.classList.add('active');
+            }
+        }
+
+        function updateVariables(vars) {
+            const table = document.getElementById('variablesTable');
+            if (Object.keys(vars).length === 0) {
+                table.innerHTML = '<tr><td colspan="2" style="text-align: center; color: #999;">لم يبدأ التنفيذ بعد</td></tr>';
+                return;
+            }
+            
+            table.innerHTML = Object.entries(vars).map(([name, value]) => `
+                <tr>
+                    <td class="var-value updated">${value}</td>
+                    <td><strong>${name}</strong></td>
+                </tr>
+            `).join('');
+        }
+
+        function addOutput(text) {
+            const output = document.getElementById('output');
+            if (output.querySelector('div[style]')) {
+                output.innerHTML = '';
+            }
+            const line = document.createElement('div');
+            line.className = 'output-line';
+            line.textContent = text;
+            output.appendChild(line);
+        }
+
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '<div style="color: #858585; font-style: italic;">جاهز للتنفيذ...</div>';
+        }
+
+        function updateVisualization(viz) {
+            const container = document.getElementById('visualization');
+            
+            if (!viz) {
+                container.innerHTML = '<div style="color: #999; font-style: italic;">في انتظار التنفيذ...</div>';
+                return;
+            }
+
+            if (currentExample === 'simple') {
+                const boxes = [];
+                for (let i = 1; i <= 5; i++) {
+                    const isDone = viz.includes(i) && viz[viz.length - 1] !== i;
+                    const isActive = viz[viz.length - 1] === i;
+                    boxes.push(`
+                        <div class="viz-box ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}">
+                            ${i}
+                        </div>
+                    `);
+                }
+                container.innerHTML = boxes.join('');
+            } else {
+                container.innerHTML = '<div class="nested-grid" style="grid-template-columns: repeat(3, 1fr);"></div>';
+                const grid = container.querySelector('.nested-grid');
+                
+                for (let d = 1; d <= 3; d++) {
+                    for (let l = 1; l <= 3; l++) {
+                        const isActive = viz.day === d && viz.lesson === l;
+                        const isDone = viz.day > d || (viz.day === d && viz.lesson > l);
+                        grid.innerHTML += `
+                            <div class="grid-cell ${isActive ? 'active' : ''} ${isDone ? 'done' : ''}">
+                                د${d}-ح${l}
+                            </div>
+                        `;
+                    }
+                }
+            }
+        }
+
+        function updateStepCounter() {
+            document.getElementById('stepCounter').textContent = currentStep;
+        }
+
+        function autoRun() {
+            if (isAutoRunning) {
+                stopAutoRun();
+            } else {
+                startAutoRun();
+            }
+        }
+
+        function startAutoRun() {
+            isAutoRunning = true;
+            document.getElementById('autoBtn').textContent = '⏸️ إيقاف';
+            document.getElementById('nextBtn').disabled = true;
+            
+            autoInterval = setInterval(() => {
+                if (currentStep >= executionSteps.length) {
+                    stopAutoRun();
+                    return;
+                }
+                nextStep();
+            }, 1000);
+        }
+
+        function stopAutoRun() {
+            isAutoRunning = false;
+            if (autoInterval) {
+                clearInterval(autoInterval);
+                autoInterval = null;
+            }
+            document.getElementById('autoBtn').textContent = '▶️ تشغيل تلقائي';
+            document.getElementById('nextBtn').disabled = false;
+        }
+
+        // Initialize
+        reset();
+    </script>
+</body>
+</html>
