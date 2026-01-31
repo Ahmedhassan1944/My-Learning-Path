@@ -1,0 +1,7 @@
+let
+    Source = GoogleSheets.Contents("https://docs.google.com/spreadsheets/d/1_ZEA3akGOvSjIBiHHsUz4Cy-VDbV5_XoaC7GOcsv8MQ/edit?gid=0#gid=0"),
+    Sheet1_Table = Source{[name="Sheet1",ItemKind="Table"]}[Data],
+    #"Promoted Headers" = Table.PromoteHeaders(Sheet1_Table, [PromoteAllScalars=true]),
+    #"Changed Type" = Table.TransformColumnTypes(#"Promoted Headers",{{"Purchase requisition", Int64.Type}, {"Name", type text}, {"Preparer", type text}, {"Project ID", type any}, {"Status", type text}, {"Created date", type date}, {"Submitted date", type date}, {"Requisition purpose", type text}, {"Site", Int64.Type}, {"Warehouse", type text}})
+in
+    #"Changed Type"
